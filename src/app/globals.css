@@ -1,0 +1,159 @@
+@import "tailwindcss";
+
+/* ───────────────────────── Palette ─────────────────────────
+   paper    #F2E6CC  page background (warm cream)
+   cream    #FBF4E2  cards, tickets, highlights
+   paper-deep #E4D2A8 secondary surfaces, shadows on paper
+   ink      #2E1D14  dark brown ink: text, outlines, halftone
+   ink-soft #6A5444  muted text (5.6:1 on paper)
+   rust     #B5483A  faded red
+   mustard  #D9A33A  mustard yellow
+   teal     #2F6E6A  deep teal
+*/
+@theme {
+  --color-paper: #f2e6cc;
+  --color-paper-deep: #e4d2a8;
+  --color-cream: #fbf4e2;
+  --color-ink: #2e1d14;
+  --color-ink-soft: #6a5444;
+  --color-rust: #b5483a;
+  --color-mustard: #d9a33a;
+  --color-teal: #2f6e6a;
+
+  --ease-snap: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@theme inline {
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-type: var(--font-elite), "Courier New", monospace;
+}
+
+@layer base {
+  html {
+    background: var(--color-paper);
+    scroll-behavior: smooth;
+  }
+
+  body {
+    min-height: 100dvh;
+    color: var(--color-ink);
+    font-family: var(--font-display);
+    background:
+      radial-gradient(120% 60% at 50% 0%, #f8eed8 0%, transparent 70%),
+      radial-gradient(90% 50% at 50% 100%, #e7d6ae 0%, transparent 70%),
+      var(--color-paper);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Paper grain: one tiled SVG noise, no blend modes, so scrolling stays cheap */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0.4;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .18 0 0 0 0 .11 0 0 0 0 .08 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  ::selection {
+    background: var(--color-mustard);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-teal);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+}
+
+/* Print-style offset shadow made of halftone dots. Set --hc to recolor, --hs for offset. */
+@utility halftone {
+  position: relative;
+  isolation: isolate;
+  --hs: 8px;
+  --hc: var(--color-ink);
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    transform: translate(var(--hs), var(--hs));
+    background-image: radial-gradient(circle, var(--hc) 1.3px, transparent 1.8px);
+    background-size: 6px 6px;
+    transition: transform 0.2s var(--ease-snap);
+  }
+}
+
+/* Card sinks into its own shadow on hover/press */
+@utility press {
+  transition: transform 0.2s var(--ease-snap);
+
+  &:hover {
+    transform: translate(3px, 3px);
+    --hs: 5px;
+  }
+
+  &:active {
+    transform: translate(6px, 6px);
+    --hs: 2px;
+  }
+}
+
+/* Admit-one ticket with punched side notches */
+@utility ticket {
+  position: relative;
+  background: var(--color-cream);
+  border: 3px solid var(--color-ink);
+  border-radius: 14px;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 24px;
+    height: 24px;
+    margin-top: -12px;
+    border-radius: 9999px;
+    background: var(--color-paper);
+    border: 3px solid var(--color-ink);
+    z-index: 2;
+  }
+
+  &::before {
+    left: -15px;
+    clip-path: inset(0 0 0 50%);
+  }
+
+  &::after {
+    right: -15px;
+    clip-path: inset(0 50% 0 0);
+  }
+}
+
+@utility perforation {
+  height: 0;
+  border-top: 3px dashed var(--color-ink);
+  opacity: 0.55;
+}
+
+/* Note: ticket owns ::before/::after for its notches, so put `halftone` on a
+   wrapper around a ticket, never on the same element. */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
