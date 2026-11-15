@@ -54,7 +54,11 @@ export const metadata: Metadata = {
   // Set these env vars after verifying the site in each console (see SEO.md).
   verification: {
     google: process.env.NEXT_PUBLIC_GSC_VERIFICATION,
-    other: process.env.NEXT_PUBLIC_BING_VERIFICATION ? { "msvalidate.01": process.env.NEXT_PUBLIC_BING_VERIFICATION } : undefined,
+    other: {
+      // Meta Business domain verification for ahmedbuildapps.com (public token, safe to commit).
+      "facebook-domain-verification": "kxg2kgnhhqrh753nmwqs9f4t5dxu5u",
+      ...(process.env.NEXT_PUBLIC_BING_VERIFICATION ? { "msvalidate.01": process.env.NEXT_PUBLIC_BING_VERIFICATION } : {}),
+    },
   },
 };
 
